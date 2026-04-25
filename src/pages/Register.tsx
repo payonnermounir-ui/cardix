@@ -32,7 +32,7 @@ export default function Register() {
 
     setLoading(true);
 
-    // If referral code provided, validate it exists
+    // ✅ تحقق من كود الإحالة
     if (referralCode.trim()) {
       const { data: referrer } = await supabase
         .from('profiles')
@@ -47,14 +47,10 @@ export default function Register() {
       }
     }
 
-    const { error: authError } = await supabase.auth.signUp({
+    // ✅ إنشاء المستخدم
+    const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          referred_by: referralCode.trim() || null,
-        },
-      },
     });
 
     if (authError) {
@@ -63,18 +59,14 @@ export default function Register() {
       return;
     }
 
-    // If referral code, update profile after signup
-    if (referralCode.trim()) {
-      // Wait a bit for the trigger to create the profile
-      setTimeout(async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('profiles')
-            .update({ referred_by: referralCode.trim() })
-            .eq('id', user.id);
-        }
-      }, 1000);
+    // ✅ حفظ الإحالة بشكل صحيح (بدون setTimeout)
+    if (data?.user && referralCode.trim()) {
+      await supabase
+        .from('profiles')
+        .update({
+          referred_by: referralCode.trim(),
+        })
+        .eq('id', data.user.id);
     }
 
     navigate('/dashboard');
@@ -109,69 +101,53 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('auth.email')}
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('auth.emailPlaceholder')}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('auth.password')}
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('auth.passwordPlaceholder')}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('auth.confirmPassword')}
-              </label>
-              <input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t('auth.passwordPlaceholder')}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('auth.referralCode')}
-              </label>
-              <input
-                type="text"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                placeholder={t('auth.referralCodePlaceholder')}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-              />
-            </div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('auth.emailPlaceholder')}
+              className="w-full rounded-xl border px-4 py-2.5"
+            />
+
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t('auth.passwordPlaceholder')}
+              className="w-full rounded-xl border px-4 py-2.5"
+            />
+
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t('auth.passwordPlaceholder')}
+              className="w-full rounded-xl border px-4 py-2.5"
+            />
+
+            <input
+              type="text"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              placeholder={t('auth.referralCodePlaceholder')}
+              className="w-full rounded-xl border px-4 py-2.5"
+            />
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+              className="w-full rounded-xl bg-indigo-600 text-white py-2.5"
             >
               {loading ? t('common.loading') : t('auth.registerBtn')}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-4 text-center text-sm text-gray-500">
             {t('auth.hasAccount')}{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/login" className="text-indigo-600">
               {t('auth.loginLink')}
             </Link>
           </p>
