@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -15,6 +15,15 @@ import Admin from '@/pages/Admin';
 import Verification from '@/pages/Verification';
 import '@/i18n';
 
+// 👇 هذا مكون صغير لتمرير referral
+function RegisterWithReferral() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const ref = params.get("ref");
+
+  return <Register referralCode={ref} />;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -23,7 +32,9 @@ export default function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+
+            {/* 👇 هنا التعديل */}
+            <Route path="/register" element={<RegisterWithReferral />} />
 
             {/* Protected routes with layout */}
             <Route
