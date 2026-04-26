@@ -68,7 +68,7 @@ export default function Admin() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const isAdmin = user?.email === 'benahmed55212841@gmail.com' || user?.email === 'admin@cardix.app';
+    const isAdmin = user?.email === 'tunisiatec66@gmail.com || user?.email === 'admin@cardix.app';
     if (!isAdmin) { navigate('/dashboard'); return; }
     loadTabData();
   }, [user, tab]);
