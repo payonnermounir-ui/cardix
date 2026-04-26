@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import app from "./app";
+import app from "./App";
 
 // Set initial direction based on stored language preference
 const storedLang = localStorage.getItem("i18nextLng");
